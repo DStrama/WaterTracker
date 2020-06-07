@@ -1,81 +1,54 @@
-import React, {Component, useContext} from 'react';
+import React, {useContext} from 'react';
 import { Context as AuthContex } from '../contex/AuthContex';
-import { View, StyleSheet, Text, TouchableWithoutFeedback} from 'react-native';
+import { View, StyleSheet, Text, ImageBackground} from 'react-native';
 import Spacer from '../components/Spacer';
-import { Input, Button, Header } from 'react-native-elements';
+import PopUp from '../components/PopUp';
 import ProgressCircle from 'react-native-progress-circle'
-import Dialog, { DialogFooter, DialogButton, DialogContent } from 'react-native-popup-dialog';
-import Drinks from '../components/Drinks';
 
 const WaterScreen = () => {
       
-        const {state, closePopUp, openPopUp, selectedOption, howManyWater} = useContext(AuthContex)
+        const {state, howManyWater} = useContext(AuthContex);
 
         return (
             <View style = {styles.container}>
-                <Header centerComponent={{ text: 'Water', style: { color: '#fff' } }}/>
-                <Spacer/>
-                <Spacer/>
+                <ImageBackground source={require('../assets/background.jpg')} style={styles.image}>
                 <View style = {styles.circle}>
                     <ProgressCircle
-                        percent={30}
-                        radius={70}
-                        borderWidth={15}
+                        percent={state.drunkwater*100/state.requiredwater}
+                        radius={100}
+                        borderWidth={20}
                         color="#3399FF"
                         shadowColor="#999"
                         bgColor="#fff">
-                        <Text style={{ fontSize: 18 }}>{'30%'}</Text>
+                        <Text style={styles.procentText}>{ Math.round(state.drunkwater*100/state.requiredwater) +' %'}</Text>
                     </ProgressCircle>
                 </View>
                 <Spacer/>
+                { state.requiredWaterReachedMessage && Math.round(state.drunkwater*100/state.requiredwater) > 100 ? (<Text style={styles.requiredWaterReachedMessage}>{state.requiredWaterReachedMessage}</Text>) : <View style={{margin: 18}}></View>}
                 <Spacer/>
-                <Button style = {styles.textAdjacent} title = "Add a drink" onPress={openPopUp}/>
-                <Dialog
-                    width={300}
-                    visible={state.visible}
-                    footer={
-                        <DialogFooter> 
-                          <DialogButton 
-                          text="Canel"
-                          onPress={closePopUp}
-                          />
-                          <DialogButton
-                          text="Add"
-                          onPress={closePopUp}
-                          />
-                        </DialogFooter>
-                    }
-                >
-                <DialogContent>
-                <View style={{margin: 10}}>
-                <Drinks selectedOption={selectedOption}/>
-                <Text>Selected option: { state.option || 'none'}</Text>
-                <Input 
-                  placeholder='ml' 
-                  style={{color:'#325FDC'}}
-                  onChangeText={value => howManyWater({value})}
-                />
-                <Text>water: { state.water || 'none'}</Text>
+                <View style={{ justifyContent: 'center', alignItems:'center'}}>
+                    <View style={styles.whiteWindow} >
+                        <View style={{flexDirection: 'row'}}>
+                            <Text style = {styles.textAdjacent} >Drunk water: </Text>
+                            <Text style = {styles.textAdjacent} >{Math.round(state.drunkwater)} ml</Text>
+                        </View>
+                        <View style={{flexDirection: 'row'}}>
+                            <Text style = {styles.textAdjacent} >Required daily water: </Text>
+                            <Text style = {styles.textAdjacent} >{Math.round(state.requiredwater)} ml</Text>
+                        </View>
+                    </View>
                 </View>
-                </DialogContent>
-                </Dialog>
                 <Spacer/>
-                <View style={{flexDirection: 'row'}}>
-                    <Text style = {styles.textAdjacent} >Drunk water:</Text>
-                <Text style = {styles.textAdjacent} >{state.water}</Text>
-                </View>
-                <View style={{flexDirection: 'row'}}>
-                    <Text style = {styles.textAdjacent} >Required daily water:</Text>
-                    <Text style = {styles.textAdjacent} >3000</Text>
-                </View>
+                <PopUp addWater={howManyWater}/>
+                </ImageBackground>
             </View>
         );
 }
 
- const styles = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
-        textAlign: 'center',
+        justifyContent: "center",
+        flex: 1
     },
     buttonStyles: {
         paddingLeft: 50,
@@ -84,16 +57,39 @@ const WaterScreen = () => {
     textAdjacent: {
         fontSize: 15,
         padding: 15,
-        color: '#a4adb6',
+        color: '#363640',
         fontWeight: 'bold'
-   },
-   circle: {
-    alignItems:'center',
-    margin: 0
-   },
-   buttons: {
-    flexDirection: "column"
-   }
+    },
+    circle: {
+        alignItems: 'center',
+        margin: 0
+    },
+    buttons: {
+        flexDirection: "column"
+    },
+    procentText: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#363640'
+    },
+    image: {
+        flex: 1,
+        resizeMode: "cover",
+        justifyContent: "center",
+    },
+    requiredWaterReachedMessage: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    whiteWindow: {
+        width: 290,
+        height: 100,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
  });
 
  export default WaterScreen;

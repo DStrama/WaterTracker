@@ -3,10 +3,13 @@ import { Context as authContext} from '../contex/AuthContex';
 
 const AuthCheckingScreen = () => {
 
-    const { isThereToken } = useContext(authContext);
+    const { isThereToken, isThereAccountData, isThereWater, isThereReachedWaterIntake } = useContext(authContext);
 
     useEffect( () => {
         isThereToken();
+        isThereAccountData();
+        isThereWater();
+        isThereReachedWaterIntake();
     },[]);
 
     return null;

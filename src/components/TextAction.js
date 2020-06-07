@@ -6,7 +6,7 @@ const TextAction = ({ textBody, textNavigation, navigation }) => {
     return(
         <>
             <TouchableOpacity onPress={ () => navigation.navigate(textNavigation)}>
-            <Text style = {styles.textAdjacent}>{textBody}</Text>
+                <Text style = {styles.textAdjacent}>{textBody}</Text>
             </TouchableOpacity>
         </>
     );

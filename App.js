@@ -8,13 +8,15 @@ import AccountScreen from './src/screens/AccountScreen';
 import SigninScreen from './src/screens/SigninScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import WaterScreen from './src/screens/WaterScreen';
+import LoadingApplicationScreen from './src/screens/LodaingApplicationScreen';
 import { setNavigation } from './src/navigationRef';
 import AuthCheckingScreen from './src/screens/AuthChcekingScreen';
 
 
 const switchNavigator = createSwitchNavigator({
     authresolve: AuthCheckingScreen,
-    authenticationFlow : createStackNavigator({
+    authenticationFlow : createSwitchNavigator({
+        loadapp: LoadingApplicationScreen,
         signin: SigninScreen,
         signup: SignupScreen
     }),

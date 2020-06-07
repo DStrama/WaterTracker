@@ -1,55 +1,81 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet} from 'react-native';
+import {View, StyleSheet, ImageBackground, TouchableOpacity, Image} from 'react-native';
 import { Context as authContext} from '../contex/AuthContex';
 import Auth from '../components/Auth';
-import TextAction from '../components/TextAction';
-import {NavigationEvents} from 'react-navigation';
+import {Icon, Text} from "react-native-elements";
+import Spacer from "../components/Spacer";
 
 const SignupScreen = ({navigation}) => {
 
-    const {state, signUp, cleanErrorMessage} = useContext(authContext);
+    const {state, signUp} = useContext(authContext);
 
     return (
         <View style={styles.container}>
-            <NavigationEvents onDidBlur={cleanErrorMessage}/>
-            <Auth
-                headerText = "Water Track"
-                errorMessage = {state.errorMessage}
-                onSubmitButton = {signUp}
-                onSubmitButtonTitle = "Sign Up"
-            />
-            <TextAction
-                textBody = "Go to signin"
-                textNavigation = "signin"
-                navigation = {navigation}
-            />
+            <ImageBackground source={require('../assets/background.jpg')} style={styles.image}>
+                <View style={styles.addButton}>
+                    <TouchableOpacity
+                        style={{
+                            borderWidth:1,
+                            borderColor:'rgba(0,0,0,0)',
+                            alignItems:'center',
+                            justifyContent:'center',
+                            width:60,
+                            height:60,
+                            backgroundColor:'#363640',
+                            borderRadius:50,
+                            shadowColor: 'rgba(0,0,0,0.4)', // IOS
+                            shadowOffset: { height: 1, width: 1 }, // IOS
+                            shadowOpacity: 1, // IOS
+                            shadowRadius: 1, //IOS
+                            elevation: 2, // Android
+                            flexDirection: 'row',
+                        }}
+                        onPress={ () => navigation.navigate('loadapp')}
+                    >
+                        <Icon name={"arrow-back"}  size={30} color='white' />
+                    </TouchableOpacity>
+                </View>
+                <View style={{ justifyContent: 'center', alignItems:'center'}}>
+                    <Text style={styles.header} h1>Water Track</Text>
+                    <Spacer/>
+                    <Image source={require('../assets/water.png')} />
+                    <Spacer/>
+                    <Spacer/>
+                </View>
+            <View style={{width: 340, height: 320, backgroundColor: 'white', borderRadius:20, margin: 20, justifyContent: "center"}} >
+                <Auth
+                    headerText = "Water Track"
+                    errorMessage = {state.errorMessage}
+                    onSubmitButton = {signUp}
+                    onSubmitButtonTitle = "Sign Up"
+                />
+            </View>
+            </ImageBackground>
         </View>
     );
 };
 
- const styles = StyleSheet.create({
-    container:{
-        marginBottom: 150,
+const styles = StyleSheet.create({
+    container: {
         justifyContent: "center",
+        resizeMode: "cover",
         flex: 1
+    },
+    image: {
+        flex: 1,
+        resizeMode: "cover",
+        justifyContent: "center",
 
     },
-    header:{
-        textAlign: "center"
+    header: {
+        textAlign: "center",
+        color: '#363640',
     },
-    textAdjacent:{
-        fontSize: 15,
-        padding: 15,
-        color: '#a4adb6',
-        fontWeight: 'bold',
-        textAlign: 'center'
-    },
-    errorMessage:{
-        color: 'red',
-        fontSize: 16,
-        marginLeft: 15
+    addButton: {
+        alignItems: 'flex-start',
+        margin: 20
     }
-  });
+ });
 
   SignupScreen.navigationOptions = () => {
     return {
@@ -58,5 +84,3 @@ const SignupScreen = ({navigation}) => {
   };
 
  export default SignupScreen;
-
- 
