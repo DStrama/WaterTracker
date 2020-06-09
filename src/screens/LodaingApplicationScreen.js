@@ -51,7 +51,7 @@ const LoadApplicationScreen = ({navigation}) => {
             </ImageBackground>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

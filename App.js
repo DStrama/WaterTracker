@@ -1,7 +1,7 @@
 import React from 'react';
 import { createAppContainer } from 'react-navigation';
 import {Provider as AuthProvider}  from './src/contex/AuthContex';
-import { createStackNavigator } from 'react-navigation-stack';
+import { Image } from 'react-native';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
 import { createSwitchNavigator } from 'react-navigation';
 import AccountScreen from './src/screens/AccountScreen';
@@ -10,7 +10,7 @@ import SignupScreen from './src/screens/SignupScreen';
 import WaterScreen from './src/screens/WaterScreen';
 import LoadingApplicationScreen from './src/screens/LodaingApplicationScreen';
 import { setNavigation } from './src/navigationRef';
-import AuthCheckingScreen from './src/screens/AuthChcekingScreen';
+import AuthCheckingScreen from './src/screens/AuthCheckingScreen';
 
 
 const switchNavigator = createSwitchNavigator({
@@ -21,8 +21,30 @@ const switchNavigator = createSwitchNavigator({
         signup: SignupScreen
     }),
     mainFlow : createBottomTabNavigator({
-        water: WaterScreen,
-        account: AccountScreen
+        water: {
+            screen: WaterScreen,
+            navigationOptions: {
+                tabBarLabel: "Water",
+                tabBarIcon: ({ tintColor }) => (
+                    <Image
+                        source={require("./src/assets/waterNavBar.png")}
+                        style={{ width: 26, height: 26, tintColor: tintColor }}
+                    />
+                )
+            }
+        },
+        account: {
+            screen: AccountScreen,
+            navigationOptions: {
+                tabBarLabel: "Account",
+                tabBarIcon: ({ tintColor }) => (
+                    <Image
+                        source={require("./src/assets/account.png")}
+                        style={{ width: 26, height: 26, tintColor: tintColor }}
+                    />
+                )
+            }
+        }
     })
   });
 

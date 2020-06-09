@@ -1,13 +1,13 @@
-import { ButtonGroup, Input, Button } from 'react-native-elements'; 
-import React, {useContext, useState} from 'react';
-import {View, StyleSheet, Text, Switch, TouchableOpacity} from 'react-native';
+import { ButtonGroup, Input } from 'react-native-elements';
+import React, { useContext, useState } from 'react';
+import { View, StyleSheet, Text, Switch, TouchableOpacity} from 'react-native';
 import { Context as AuthContex } from '../contex/AuthContex';
 import Spacer from '../components/Spacer';
-import * as Progress from 'react-native-progress';
+import { Slider } from 'react-native'
 
 const UserData = ({}) => {
 
-    const { state, saveData} = useContext(AuthContex)
+    const { state, saveData, changeRequiredWater} = useContext(AuthContex)
 
     const [gender, setGender] = useState('');
     const [genderIndex, setGenderIndex] = useState(null);
@@ -45,11 +45,16 @@ const UserData = ({}) => {
                                 borderColor: '#74f3c3',
                                 shadowColor: '#74f3c3',
                                 borderRadius: 20,
+                                backgroundColor:'#fff'
                             }}
-
+                            vertical={true}
+                            innerBorderStyle={{
+                                color: '#74f3c3',
+                                borderRadius: 20
+                            }}
                             buttonStyle={{
                                 backgroundColor: 'white',
-                                borderColor: '#74f3c3'
+                                borderColor: '#74f3c3',
 
                             }}
                             selectedButtonStyle={{
@@ -74,6 +79,7 @@ const UserData = ({}) => {
                             onChangeText={setWeight}
                         />
                     </View>
+                    { state.invalidInputDataMessage ? (<Text style={{color: 'red', marginLeft: 30, marginTop: 5}}>{state.invalidInputDataMessage}</Text>) : <View style={{margin: 5}}></View>}
                     <Spacer/>
                     <View style={{flexDirection: 'row'}}>
                         <Text style={styles.textAdjacent}>Physical Acitvity</Text>
@@ -107,13 +113,19 @@ const UserData = ({}) => {
                         </TouchableOpacity>
                     </View>
                     <Spacer/>
-                    <View style={{flexDirection: 'row'}}>
-                        <Text style={styles.dailyLimit} >Daily Water limit: </Text>
-                        <Text style={styles.dailyLimit} >{state.requiredwater} ml</Text>
-                    </View>
-                    <Spacer/>
                     <View style={styles.buttonStyles}>
-                        <Progress.Bar style={styles.progressBar} progress={0.5} width={300} height={15} color={'#74f3c3'} />
+                        <Slider
+                            style={{width: 300, height: 50}}
+                            minimumValue={0}
+                            maximumValue={10000}
+                            minimumTrackTintColor="#74f3c3"
+                            maximumTrackTintColor="black"
+                            value={state.requiredwater}
+                            step={100}
+                            onSlidingComplete={ value => changeRequiredWater({value}) }
+                        />
+                        <Text style={styles.dailyLimit} >Daily Water limit: {isNaN(state.requiredwater) ? 0 : state.requiredwater} ml</Text>
+                        { state.sliderMessage ? (<Text style={{color: 'red', marginLeft: 30, marginTop: 5}}>{state.sliderMessage}</Text>) : <View style={{margin: 5}}></View>}
                     </View>
             </View>
         </View>
@@ -125,11 +137,6 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: "center",
         flex: 1
-    },
-    headerText:{
-        color: 'white',
-        textAlign: "center",
-        fontSize: 20
     },
     textAdjacent:{
          fontSize: 25,
@@ -146,26 +153,22 @@ const styles = StyleSheet.create({
         marginRight: 200,
         marginLeft: 20
     },
-    image: {
-        flex: 1,
-        resizeMode: "cover",
-        justifyContent: "center",
-    },
     genderText: {
         marginLeft: 20,
         color: 'black',
         fontSize: 25,
         fontWeight: 'bold'
-    },buttonGroup: {
+    },
+    buttonGroup: {
         margin: 15,
         alignItems:'center'
-    },dailyLimit: {
+    },
+    dailyLimit: {
         fontSize: 17,
         color: 'black',
         margin: 20,
         fontWeight: 'bold'
     }
-
  });
 
 export default UserData;

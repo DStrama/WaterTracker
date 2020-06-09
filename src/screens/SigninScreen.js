@@ -1,6 +1,5 @@
 import React, { useContext} from 'react';
 import {View, StyleSheet, ImageBackground, TouchableOpacity, Image} from 'react-native';
-import { NavigationEvents } from 'react-navigation';
 import { Context as authContext} from '../contex/AuthContex';
 import Auth from '../components/Auth';
 import {Icon, Text} from "react-native-elements";
@@ -9,6 +8,7 @@ import Spacer from "../components/Spacer";
 const SigninScreen = ({navigation}) => {
 
     const {state, signIn, cleanErrorMessage } = useContext(authContext);
+
     return (
         <View style={styles.container}>
             <ImageBackground source={require('../assets/background.jpg')} style={styles.image}>
@@ -19,8 +19,8 @@ const SigninScreen = ({navigation}) => {
                             borderColor:'rgba(0,0,0,0)',
                             alignItems:'center',
                             justifyContent:'center',
-                            width:60,
-                            height:60,
+                            width:50,
+                            height:50,
                             backgroundColor:'#363640',
                             borderRadius:50,
                             shadowColor: 'rgba(0,0,0,0.4)', // IOS
@@ -28,9 +28,9 @@ const SigninScreen = ({navigation}) => {
                             shadowOpacity: 1, // IOS
                             shadowRadius: 1, //IOS
                             elevation: 2, // Android
-                            flexDirection: 'row',
+                            flexDirection: 'row'
                         }}
-                        onPress={ () => {navigation.navigate('loadapp'); cleanErrorMessage}}
+                        onPress={ () => {navigation.navigate('loadapp'); cleanErrorMessage()}}
                     >
                         <Icon name={"arrow-back"}  size={30} color='white' />
                     </TouchableOpacity>
@@ -41,13 +41,13 @@ const SigninScreen = ({navigation}) => {
                     <Image source={require('../assets/water.png')} />
                     <Spacer/>
                     <Spacer/>
-                    <View style={{width: 340, height: 320, backgroundColor: 'white', borderRadius:20, margin: 20, justifyContent: "center"}} >
+                    <View style={{width: 340, height: 320, backgroundColor: 'white', borderRadius:30, margin: 20, justifyContent: "center"}} >
                         <Auth
                             errorMessage = {state.errorMessage}
                             onSubmitButton = {signIn}
                             onSubmitButtonTitle = "Sign In"
                         />
-                </View>
+                    </View>
             </View>
             </ImageBackground>
         </View>

@@ -19,12 +19,8 @@ const authReducer = (state, action) => {
             return { ...state, water: action.payload}
         case 'weight':
             return { ...state, weight: action.payload}
-        case 'gender':
-            return { ...state, gender: action.payload}
         case 'physicalActivity':
             return { ...state, physicalActivity: action.payload}
-        case 'error_add_data':
-            return { ...state, errorMessage: action.payload}
         case 'requiredwater':
             return { ...state, requiredwater: action.payload}
         case 'drunkwater':
@@ -33,6 +29,16 @@ const authReducer = (state, action) => {
             return {... state, requiredWaterReachedMessage: action.payload}
         case 'cleanRequiredWaterReachedMessage':
             return {... state, requiredWaterReachedMessage: ''}
+        case 'dataId':
+            return { ...state, dataId: action.payload}
+        case 'addDataError':
+            return { ...state, invalidInputDataMessage: action.payload}
+        case 'addWaterError':
+            return { ...state, invalidInputAddWaterMessage: action.payload}
+        case 'changePopUpVisible':
+            return { ...state, visiblePopUp: action.payload}
+        case 'sliderError':
+            return { ...state, sliderMessage: action.payload}
         default:
             return state;
     }
@@ -50,8 +56,8 @@ const isThereToken = dispatch => async() => {
 
 const isThereAccountData = dispatch => async() => {
     const dailyWaterLimit = await AsyncStorage.getItem('requiredwater');
-    if(dailyWaterLimit != 0){
-        dispatch({ type: 'requiredwater', payload: dailyWaterLimit})
+    if(dailyWaterLimit !== 0){
+        dispatch({ type: 'requiredwater', payload: dailyWaterLimit});
     } else {
         navigate('account');
     }
@@ -60,14 +66,23 @@ const isThereAccountData = dispatch => async() => {
 const isThereWater = dispatch => async() => {
     const drunkwater = await AsyncStorage.getItem('drunkwater');
     if(drunkwater  != 0){
-        dispatch({ type: 'drunkwater', payload: drunkwater})
+        dispatch({ type: 'drunkwater', payload: drunkwater});
     }
 }
 
 const isThereReachedWaterIntake = dispatch => async() => {
     const requiredWaterReachedMessage = await AsyncStorage.getItem('requiredWaterReachedMessage');
     if(requiredWaterReachedMessage != '') {
-        dispatch({ type: 'requiredWaterReachedMessage', payload: requiredWaterReachedMessage})
+        dispatch({ type: 'requiredWaterReachedMessage', payload: requiredWaterReachedMessage});
+    }
+}
+
+const isThereNewDay = dispatch => async() => {
+    const savedDate = await AsyncStorage.getItem('date');
+    const date = new Date(Date.now()).toLocaleString().split(',')[0];
+
+    if(date != savedDate){
+        dispatch({ type: 'drunkwater', payload: 0 });
     }
 }
 
@@ -98,10 +113,44 @@ const signUp = (dispatch) => async ({ email, password }) => {
 const signIn = (dispatch) => async ({ email, password}) => {
     try {
         const response  = await API.post('/signin', { email, password});
-        await AsyncStorage.setItem('token', response.data.token)
+        const token = response.data.token;
+        const date = new Date(Date.now()).toLocaleString().split(',')[0];
 
-        dispatch({ type: 'signin', payload: response.data.token })
-        navigate('water')
+        const getRequiredWater  = await API.get('/data',{
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('requiredwater', String(getRequiredWater.data[ getRequiredWater.data.length - 1 ].userData.requiredwater));
+
+        dispatch({ type: 'signin', payload: token });
+        dispatch({ type: 'requiredwater', payload: getRequiredWater.data[ getRequiredWater.data.length - 1 ].userData.requiredwater});
+
+        const responseHowManyWater  = await API.get('/water',
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+        });
+
+        const water = responseHowManyWater.data.filter( i => i.day.data === date);
+        const howManyDrunkLiquid = water.reduce( (sum, current) => sum + current.day.drunkwater, 0 );
+
+        await AsyncStorage.setItem('drunkwater', String(howManyDrunkLiquid));
+
+        if(howManyDrunkLiquid >= getRequiredWater.data[ getRequiredWater.data.length - 1 ].userData.requiredwater ) {
+            await AsyncStorage.setItem('requiredWaterReachedMessage', 'Congratulation! \n You reach daily water intake.');
+            dispatch({type: 'requiredWaterReachedMessage', payload: 'Congratulation! \n You reach daily water intake.'});
+        }
+
+        dispatch({ type: 'drunkwater', payload: howManyDrunkLiquid});
+
+
+        navigate('water');
 
     } catch(err) {
         dispatch({
@@ -116,20 +165,21 @@ const signOut = dispatch => async () => {
     await AsyncStorage.removeItem('requiredwater');
     await AsyncStorage.removeItem('drunkwater');
     await AsyncStorage.removeItem('requiredWaterReachedMessage');
+    await AsyncStorage.removeItem('dataId');
     dispatch({ type: 'signout'});
     navigate('loadapp');
 };
 
 const selectedOption = (dispatch) => async ({option}) => {
-    dispatch({ type: 'selectedOption', payload: option })
-    console.log(option)
+    dispatch({ type: 'selectedOption', payload: option });
+    console.log(option);
 }
 
 const howManyWater = (dispatch) => async ({mililiters, liquid}) => {
     try {
         const token = await AsyncStorage.getItem('token');
         const required = await AsyncStorage.getItem('requiredwater');
-        const date = new Date(Date.now()).toLocaleString().split(',')[0]
+        const date = new Date(Date.now()).toLocaleString().split(',')[0];
         
             const response  = await API.post('/water', 
             {            
@@ -151,22 +201,28 @@ const howManyWater = (dispatch) => async ({mililiters, liquid}) => {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + token
                 }
-            })
+            });
             
-            const water = responseHowManyWater.data.filter( i => i.day.data == date)
-            const howManyDrunkLiquid = water.reduce( (sum, current) => sum + current.day.drunkwater, 0 )
+            const water = responseHowManyWater.data.filter( i => i.day.data == date);
+            const howManyDrunkLiquid = water.reduce( (sum, current) => sum + current.day.drunkwater, 0 );
 
-            await AsyncStorage.setItem('drunkwater', String(howManyDrunkLiquid))
+            await AsyncStorage.setItem('drunkwater', String(howManyDrunkLiquid));
+            await AsyncStorage.setItem('date', String(date));
 
             if(howManyDrunkLiquid >= required ) {
                 await AsyncStorage.setItem('requiredWaterReachedMessage', 'Congratulation! \n You reach daily water intake.');
                 dispatch({type: 'requiredWaterReachedMessage', payload: 'Congratulation! \n You reach daily water intake.'});
             }
 
-            dispatch({ type: 'drunkwater', payload: howManyDrunkLiquid})
-    
+            dispatch({ type: 'drunkwater', payload: howManyDrunkLiquid});
+            dispatch({ type: 'addWaterError', payload: ''});
 } catch(err) {
-    console.log(err)
+    console.log(err);
+    dispatch({
+        type: 'addWaterError',
+        payload: 'Failed to add value'
+    });
+
 }
 
 }
@@ -186,11 +242,57 @@ const saveData = (dispatch) => async ({gender, weight, physicalActivity}) => {
                 'Authorization': 'Bearer ' + token
             }
           });
-        await AsyncStorage.setItem('requiredwater', String(response.data.userData.requiredwater))
-        dispatch({ type: 'requiredwater', payload: response.data.userData.requiredwater})
+        await AsyncStorage.setItem('requiredwater', String(response.data.userData.requiredwater));
+        await AsyncStorage.setItem('dataId', String(response.data._id));
+
+        dispatch({ type: 'dataId', payload: response.data._id});
+        dispatch({ type: 'requiredwater', payload: response.data.userData.requiredwater});
+        dispatch({ type: 'addDataError', payload: ''});
+        dispatch({ type: 'sliderError', payload: ''});
     } catch(err) {
-        console.log(err)
+        console.log(err);
+        dispatch({
+            type: 'addDataError',
+            payload: 'Invalid input'
+        });
     }
+}
+
+const changeRequiredWater = (dispatch) => async ({value}) => {
+    try {
+        const id = await AsyncStorage.getItem('dataId');
+        const token = await AsyncStorage.getItem('token' );
+
+        console.log(value);
+
+        const response  = await API.put('/data/' + id,
+            {
+                'userData':{
+                    "requiredwater": value
+                }
+            },{
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+        await AsyncStorage.setItem('requiredwater', String(response.data.userData.requiredwater));
+        dispatch({ type: 'requiredwater', payload: response.data.userData.requiredwater});
+        dispatch({ type: 'sliderError', payload: ''});
+    } catch(err) {
+        console.log(err);
+        dispatch({
+            type: 'sliderError',
+            payload: 'Error, set data first'
+        });
+    }
+
+}
+
+const changePopUpVisible = dispatch => async () => {
+    const visible = await AsyncStorage.getItem('visiblePopUp');
+    dispatch({ type: 'changePopUpVisible', payload: !visible });
 }
 
 export const {Provider, Context} = createDataContext(
@@ -207,16 +309,24 @@ export const {Provider, Context} = createDataContext(
         howManyWater,
         saveData,
         cleanRequiredWaterReachedMessage,
-        isThereReachedWaterIntake
+        isThereReachedWaterIntake,
+        changeRequiredWater,
+        changePopUpVisible,
+        isThereNewDay
     },
     {
         token: null,
         requiredwater: 0,
+        dataId: null,
+        date: '',
         drunkwater: 0,
         water: 0,
         errorMessage: '',
-        visible: false,
         option: '',
-        requiredWaterReachedMessage: ''
+        requiredWaterReachedMessage: '',
+        invalidInputDataMessage: '',
+        invalidInputAddWaterMessage: '',
+        sliderMessage: '',
+        visiblePopUp: false
     }
 ); 

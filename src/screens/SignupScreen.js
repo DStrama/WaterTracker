@@ -7,7 +7,7 @@ import Spacer from "../components/Spacer";
 
 const SignupScreen = ({navigation}) => {
 
-    const {state, signUp} = useContext(authContext);
+    const {state, signUp, cleanErrorMessage} = useContext(authContext);
 
     return (
         <View style={styles.container}>
@@ -19,8 +19,8 @@ const SignupScreen = ({navigation}) => {
                             borderColor:'rgba(0,0,0,0)',
                             alignItems:'center',
                             justifyContent:'center',
-                            width:60,
-                            height:60,
+                            width:50,
+                            height:50,
                             backgroundColor:'#363640',
                             borderRadius:50,
                             shadowColor: 'rgba(0,0,0,0.4)', // IOS
@@ -30,7 +30,7 @@ const SignupScreen = ({navigation}) => {
                             elevation: 2, // Android
                             flexDirection: 'row',
                         }}
-                        onPress={ () => navigation.navigate('loadapp')}
+                        onPress={ () => {navigation.navigate('loadapp'); cleanErrorMessage();}}
                     >
                         <Icon name={"arrow-back"}  size={30} color='white' />
                     </TouchableOpacity>
@@ -41,15 +41,14 @@ const SignupScreen = ({navigation}) => {
                     <Image source={require('../assets/water.png')} />
                     <Spacer/>
                     <Spacer/>
+                    <View style={{width: 340, height: 320, backgroundColor: 'white', borderRadius:30, margin: 20, justifyContent: "center"}} >
+                        <Auth
+                            errorMessage = {state.errorMessage}
+                            onSubmitButton = {signUp}
+                            onSubmitButtonTitle = "Sign Up"
+                        />
+                    </View>
                 </View>
-            <View style={{width: 340, height: 320, backgroundColor: 'white', borderRadius:20, margin: 20, justifyContent: "center"}} >
-                <Auth
-                    headerText = "Water Track"
-                    errorMessage = {state.errorMessage}
-                    onSubmitButton = {signUp}
-                    onSubmitButtonTitle = "Sign Up"
-                />
-            </View>
             </ImageBackground>
         </View>
     );
@@ -77,10 +76,10 @@ const styles = StyleSheet.create({
     }
  });
 
-  SignupScreen.navigationOptions = () => {
+SignupScreen.navigationOptions = () => {
     return {
         headerShown: false
     };
-  };
+};
 
- export default SignupScreen;
+export default SignupScreen;
